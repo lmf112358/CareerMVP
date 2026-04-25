@@ -1,127 +1,329 @@
 import { describe, it, expect } from 'vitest';
 import {
-  JDOutputSchema,
-  ExperienceMapSchema,
-  MockFeedbackSchema,
-  ApiErrorSchema,
+  RawJDInputSchema,
+  RawExperienceInputSchema,
+  UserPreferencesSchema,
+  AggregatedJDProfileSchema,
+  GapAnalysisResultSchema,
+  PersonalizedSprintPlanSchema,
+  OptimizedSprintPlanSchema,
+  SprintWorkflowInputSchema,
+  SprintWorkflowOutputSchema,
+  WorkflowMetadataSchema,
+  StageProgressEventSchema,
 } from './schemas';
 
-describe('JDOutputSchema', () => {
-  it('should validate a valid JD output', () => {
-    const valid = {
-      core_actions: ['产品规划', '用户调研', '需求分析'],
-      mvs_skills: {
-        hard: ['Axure', 'Figma', 'SQL', '数据分析'],
-        soft: ['跨部门沟通', '项目管理', '快速学习'],
-      },
-      hidden_risks: ['加班可能较多', '要求快速上手', '指标压力大'],
-      weekly_proof: [
-        { week: 1, task: '熟悉产品文档和业务逻辑', proof_type: '文档' as const },
-        { week: 2, task: '完成一次用户调研并输出报告', proof_type: '文档' as const },
-      ],
+describe('RawJDInputSchema', () => {
+  it('should validate a valid JD input', () => {
+    const validInput = {
+      id: 'jd-1',
+      title: '产品经理',
+      content: '这是一个有效的招聘要求，至少需要 20 个字符。产品经理需要负责需求分析、产品设计、项目管理等工作。',
     };
-
-    const result = JDOutputSchema.safeParse(valid);
+    const result = RawJDInputSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
-  it('should reject invalid proof_type', () => {
-    const invalid = {
-      core_actions: ['test'],
-      mvs_skills: { hard: [], soft: [] },
-      hidden_risks: [],
-      weekly_proof: [
-        { week: 1, task: 'test', proof_type: 'invalid_type' },
-      ],
+  it('should reject JD with too short content', () => {
+    const invalidInput = {
+      id: 'jd-1',
+      content: '太短',
     };
-
-    const result = JDOutputSchema.safeParse(invalid);
+    const result = RawJDInputSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
   });
 
-  it('should reject week outside 1-4', () => {
-    const invalid = {
-      core_actions: ['test'],
-      mvs_skills: { hard: [], soft: [] },
-      hidden_risks: [],
-      weekly_proof: [
-        { week: 5, task: 'test', proof_type: '截图' as const },
-      ],
+  it('should accept JD without title', () => {
+    const validInput = {
+      id: 'jd-1',
+      content: '这是一个有效的招聘要求，至少需要 20 个字符。产品经理需要负责需求分析、产品设计、项目管理等工作。',
     };
-
-    const result = JDOutputSchema.safeParse(invalid);
-    expect(result.success).toBe(false);
-  });
-});
-
-describe('ExperienceMapSchema', () => {
-  it('should validate a valid experience map', () => {
-    const valid = {
-      original: '我在学生会做过招新活动...',
-      optimized: {
-        situation: '当时学生会新一届招新，上一年效果一般...',
-        task: '我负责设计宣传海报和现场签到...',
-        action: '我参考了 5 个高校的海报设计...',
-        result: '最终报名人数比去年提升了 30%...',
-      },
-      transferable_skills: ['项目管理', '跨部门协作', '快速学习'],
-      resume_line: '主导学生会招新项目，通过优化宣传策略和现场流程，实现报名人数同比增长 30%。',
-    };
-
-    const result = ExperienceMapSchema.safeParse(valid);
+    const result = RawJDInputSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 });
 
-describe('MockFeedbackSchema', () => {
-  it('should validate a valid feedback', () => {
-    const valid = {
-      score: 78,
-      strengths: ['逻辑清晰', '数据意识强', '沟通顺畅'],
-      weaknesses: ['结果未量化', '缺乏复盘视角'],
-      optimized_star: {
-        situation: '在项目进度滞后两周时...',
-        task: '需要把进度追回并保证质量...',
-        action: '我重新梳理了需求优先级...',
-        result: '最终项目按时交付，需求覆盖率 95%...',
-      },
+describe('RawExperienceInputSchema', () => {
+  it('should validate a valid experience input', () => {
+    const validInput = {
+      id: 'exp-1',
+      title: '学生会项目管理',
+      content: '负责组织校园活动，协调多个部门合作，完成了多个项目。',
     };
-
-    const result = MockFeedbackSchema.safeParse(valid);
+    const result = RawExperienceInputSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
-  it('should reject score outside 0-100', () => {
-    const invalid = {
-      score: 150,
-      strengths: [],
-      weaknesses: [],
-      optimized_star: { situation: '', task: '', action: '', result: '' },
+  it('should reject experience with too short content', () => {
+    const invalidInput = {
+      id: 'exp-1',
+      content: '短',
     };
-
-    const result = MockFeedbackSchema.safeParse(invalid);
+    const result = RawExperienceInputSchema.safeParse(invalidInput);
     expect(result.success).toBe(false);
   });
 });
 
-describe('ApiErrorSchema', () => {
-  it('should validate a valid API error', () => {
-    const valid = {
-      error: '解析失败',
-      retry: true,
-      retryAfter: 60,
+describe('UserPreferencesSchema', () => {
+  it('should validate valid preferences', () => {
+    const validInput = {
+      dailyHoursAvailable: 2,
+      currentLevel: 'beginner',
+      priorityStrategy: 'critical-first',
     };
-
-    const result = ApiErrorSchema.safeParse(valid);
+    const result = UserPreferencesSchema.safeParse(validInput);
     expect(result.success).toBe(true);
   });
 
-  it('should validate minimal API error', () => {
-    const minimal = {
-      error: '服务暂时不可用',
-    };
+  it('should accept all valid currentLevel values', () => {
+    const levels = ['beginner', 'intermediate', 'advanced'] as const;
+    levels.forEach((level) => {
+      const result = UserPreferencesSchema.safeParse({
+        dailyHoursAvailable: 2,
+        currentLevel: level,
+        priorityStrategy: 'critical-first',
+      });
+      expect(result.success).toBe(true);
+    });
+  });
 
-    const result = ApiErrorSchema.safeParse(minimal);
+  it('should accept all valid priorityStrategy values', () => {
+    const strategies = ['critical-first', 'balanced', 'confidence-first'] as const;
+    strategies.forEach((strategy) => {
+      const result = UserPreferencesSchema.safeParse({
+        dailyHoursAvailable: 2,
+        currentLevel: 'beginner',
+        priorityStrategy: strategy,
+      });
+      expect(result.success).toBe(true);
+    });
+  });
+
+  it('should reject invalid dailyHoursAvailable', () => {
+    const result = UserPreferencesSchema.safeParse({
+      dailyHoursAvailable: 10, // 超过最大值 8
+      currentLevel: 'beginner',
+      priorityStrategy: 'critical-first',
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('SprintWorkflowInputSchema', () => {
+  it('should validate input with 1 JD', () => {
+    const validInput = {
+      rawJDs: [
+        {
+          id: 'jd-1',
+          content: '这是一个有效的招聘要求，至少需要 20 个字符。产品经理需要负责需求分析、产品设计、项目管理等工作。',
+        },
+      ],
+      preferences: {
+        dailyHoursAvailable: 2,
+        currentLevel: 'beginner',
+        priorityStrategy: 'critical-first',
+      },
+    };
+    const result = SprintWorkflowInputSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+  });
+
+  it('should validate input with 3 JDs', () => {
+    const jdContent = '这是一个有效的招聘要求，至少需要 20 个字符。产品经理需要负责需求分析、产品设计、项目管理等工作。';
+    const validInput = {
+      rawJDs: [
+        { id: 'jd-1', content: jdContent },
+        { id: 'jd-2', content: jdContent },
+        { id: 'jd-3', content: jdContent },
+      ],
+      preferences: {
+        dailyHoursAvailable: 2,
+        currentLevel: 'beginner',
+        priorityStrategy: 'critical-first',
+      },
+    };
+    const result = SprintWorkflowInputSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject input without JDs', () => {
+    const invalidInput = {
+      rawJDs: [],
+      preferences: {
+        dailyHoursAvailable: 2,
+        currentLevel: 'beginner',
+        priorityStrategy: 'critical-first',
+      },
+    };
+    const result = SprintWorkflowInputSchema.safeParse(invalidInput);
+    expect(result.success).toBe(false);
+  });
+
+  it('should reject input with more than 3 JDs', () => {
+    const jdContent = '这是一个有效的招聘要求，至少需要 20 个字符。产品经理需要负责需求分析、产品设计、项目管理等工作。';
+    const invalidInput = {
+      rawJDs: [
+        { id: 'jd-1', content: jdContent },
+        { id: 'jd-2', content: jdContent },
+        { id: 'jd-3', content: jdContent },
+        { id: 'jd-4', content: jdContent },
+      ],
+      preferences: {
+        dailyHoursAvailable: 2,
+        currentLevel: 'beginner',
+        priorityStrategy: 'critical-first',
+      },
+    };
+    const result = SprintWorkflowInputSchema.safeParse(invalidInput);
+    expect(result.success).toBe(false);
+  });
+
+  it('should validate input with experiences', () => {
+    const validInput = {
+      rawJDs: [
+        {
+          id: 'jd-1',
+          content: '这是一个有效的招聘要求，至少需要 20 个字符。产品经理需要负责需求分析、产品设计、项目管理等工作。',
+        },
+      ],
+      rawExperiences: [
+        {
+          id: 'exp-1',
+          content: '负责组织校园活动，协调多个部门合作，完成了多个项目。',
+        },
+      ],
+      preferences: {
+        dailyHoursAvailable: 2,
+        currentLevel: 'beginner',
+        priorityStrategy: 'critical-first',
+      },
+    };
+    const result = SprintWorkflowInputSchema.safeParse(validInput);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('AggregatedJDProfileSchema', () => {
+  it('should validate a valid profile', () => {
+    const validProfile = {
+      sourceCount: 2,
+      sourceTitles: ['产品经理', '高级产品经理'],
+      commonSkills: {
+        hard: ['PRD', '数据分析', 'Axure'],
+        soft: ['沟通协调', '项目管理', '用户思维'],
+      },
+      commonCoreActions: ['需求分析', '产品设计', '项目跟进'],
+      commonHiddenRisks: ['加班多', '快速迭代压力'],
+      differentiatedSkills: [
+        {
+          company: 'JD 1',
+          uniqueSkills: ['B端产品经验'],
+          emphasis: '强调数据驱动决策',
+        },
+      ],
+      priorityMatrix: [
+        {
+          skill: 'PRD',
+          category: 'hard',
+          priority: 'Critical',
+          reasoning: '产品经理的核心技能',
+        },
+      ],
+      unifiedCapabilityVector: [
+        {
+          dimension: '产品设计能力',
+          requiredLevel: 'Intermediate',
+          description: '能够独立完成产品设计',
+        },
+      ],
+    };
+    const result = AggregatedJDProfileSchema.safeParse(validProfile);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('GapAnalysisResultSchema', () => {
+  it('should validate a valid gap analysis', () => {
+    const validAnalysis = {
+      overallCoverage: 65,
+      skillGaps: [
+        {
+          skill: 'PRD',
+          category: 'hard',
+          priority: 'Critical',
+          isRequired: true,
+          isCovered: false,
+          matchScore: 0,
+          gapDescription: '没有相关经历',
+          suggestion: '学习 PRD 撰写方法',
+        },
+      ],
+      experienceMatches: [
+        {
+          experienceId: 'exp-1',
+          skillsCovered: ['项目管理'],
+          skillsPartiallyCovered: ['数据分析'],
+          contributionScore: 45,
+          strengths: ['有项目协调经验'],
+          weaknesses: ['缺乏产品相关技能'],
+        },
+      ],
+      criticalGaps: ['PRD', 'Axure'],
+      highPriorityGaps: ['数据分析'],
+      recommendationSummary: '建议重点学习 PRD 撰写和 Axure 使用',
+      coverageByCategory: [
+        {
+          category: '硬技能',
+          required: 8,
+          covered: 3,
+          percentage: 37.5,
+        },
+      ],
+    };
+    const result = GapAnalysisResultSchema.safeParse(validAnalysis);
+    expect(result.success).toBe(true);
+  });
+});
+
+describe('StageProgressEventSchema', () => {
+  it('should validate a valid progress event', () => {
+    const validEvent = {
+      stage: 1,
+      stageName: 'JD 聚合与提炼',
+      status: 'running',
+      progress: 0.5,
+      message: '正在分析 JD 内容...',
+    };
+    const result = StageProgressEventSchema.safeParse(validEvent);
+    expect(result.success).toBe(true);
+  });
+
+  it('should reject invalid progress values', () => {
+    const invalidEvent = {
+      stage: 1,
+      stageName: 'JD 聚合与提炼',
+      status: 'running',
+      progress: 1.5, // 超过 1.0
+      message: '正在分析 JD 内容...',
+    };
+    const result = StageProgressEventSchema.safeParse(invalidEvent);
+    expect(result.success).toBe(false);
+  });
+});
+
+describe('WorkflowMetadataSchema', () => {
+  it('should validate valid metadata', () => {
+    const validMetadata = {
+      workflowId: 'sw-123456-abcdef',
+      startTime: '2026-04-25T10:00:00.000Z',
+      endTime: '2026-04-25T10:01:30.000Z',
+      totalDurationMs: 90000,
+      stagesCompleted: 4,
+      totalStages: 4,
+      llmCalls: 6,
+      version: '1.0.0',
+    };
+    const result = WorkflowMetadataSchema.safeParse(validMetadata);
     expect(result.success).toBe(true);
   });
 });
