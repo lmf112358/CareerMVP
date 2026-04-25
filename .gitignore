@@ -35,3 +35,6 @@ next-env.d.ts
 # ide
 .idea
 .vscode
+
+# 敏感文档（不追踪）
+技术方案.md
