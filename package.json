@@ -1,0 +1,45 @@
+{
+  "name": "careermvp",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run"
+  },
+  "dependencies": {
+    "@ai-sdk/openai": "^1.2.0",
+    "@ai-sdk/react": "^1.2.0",
+    "ai": "^4.2.0",
+    "framer-motion": "^12.6.2",
+    "idb-keyval": "^6.2.1",
+    "lucide-react": "^0.479.0",
+    "next": "14.2.26",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zod": "^3.24.2",
+    "zustand": "^5.0.3"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^16.3.0",
+    "@types/node": "22.13.11",
+    "@types/react": "18.3.20",
+    "@types/react-dom": "18.3.6",
+    "@vitejs/plugin-react": "^4.4.2",
+    "autoprefixer": "10.4.21",
+    "eslint": "8.57.1",
+    "eslint-config-next": "14.2.26",
+    "jsdom": "^29.0.2",
+    "postcss": "8.5.3",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.8.3",
+    "vitest": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=18.18"
+  }
+}
